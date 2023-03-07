@@ -16,7 +16,7 @@
 
 from onedal import _backend
 from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes._data_conversion import from_table, to_table, _convert_to_supported
 from daal4py.sklearn._utils import sklearn_check_version
 
 import numpy as np
@@ -45,7 +45,7 @@ class PCA():
 
     def fit(self, X, y, queue):
         n_samples, n_features = X.shape
-        n_sf_min = min(n_samples, n_features)
+        n_sf_min = min(n_samples, n_features) 
 
         policy = _get_policy(queue, X, y)
         params = self.get_onedal_params(X)
@@ -59,7 +59,7 @@ class PCA():
         result = _backend.decomposition.dim_reduction.train(
             policy,
             params,
-            to_table(covariance_matrix)
+            to_table(_convert_to_supported(policy,covariance_matrix))
         )
 
         self.n_components_ = self.n_components
@@ -102,5 +102,5 @@ class PCA():
         result = _backend.decomposition.dim_reduction.infer(policy,
                                                             params,
                                                             model,
-                                                            to_table(X))
+                                                            to_table( _convert_to_supported(policy,X)))
         return from_table(result.transformed_data)
